@@ -8,7 +8,7 @@ var fetch = function(historyId, method){
 }
 //push(push进去之后执行的func，被pop出来之后执行的func)
 var changeState = function(method){
-    return function(state, title, url, forwardFunc, backFunc){
+    return function(state, title, url, forwardFunc, backFunc, stateData){
         if(method === 'replaceState'){
             curState && fetch(curState.$id, 'pop');
             curState = {
@@ -22,6 +22,14 @@ var changeState = function(method){
         }
 
         history[method](curState, document.title = title || document.title, url || location.href);
+
+        if(stateData){
+            for(var key in stateData){
+                if(stateData.hasOwnProperty(key)){
+                    curState[key] = stateData[key];
+                }
+            }   
+        }
 
         historyStateMap.splice(ai);
         historyStateMap[curState.$id] = {
