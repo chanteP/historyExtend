@@ -1,0 +1,62 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+
+        <meta charset="utf-8" />
+        <meta http-equiv="content-language" content="zh-CN" />
+        <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+        <meta content="yes" name="apple-mobile-web-app-capable" />
+        <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+        <meta content="telephone=no" name="format-detection" />
+        <title></title>
+    </head>
+    <body>
+    <style>
+    a{
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+    }
+    button{
+        width:100%;
+        line-height:30px;
+        height: 30px;
+        margin:30px auto;
+    }
+    </style>
+    <button id="push">push!!!</button>
+    <div>
+        <button onclick="history.go(-1)" style="margin:0 auto 30px;float:left;width:50%;">back</button>
+        <button onclick="history.go(1)" style="margin:0 auto 30px;float:left;width:50%;">forward</button>
+    </div>
+    <div id="content"></div>
+    <script>
+    //test
+    var module = {};
+    </script>
+    <script src="./index.js"></script>
+
+    <script>
+        //#################################################################################
+        push.onclick = function(){
+            module.exports.pushState(null, '', '?'+Date.now(), function(state){
+                    var a;
+                    a = document.createElement('a');
+                    a.fxcolor = a.style.background = 'hsla('+state.$id*30+',80%,80%,.7)';
+                    content.appendChild(a);
+
+                    state.node = a;
+                    state.color = a.fxcolor;
+
+                    console.log('%c', 'margin-left:20px;border-left:20px solid ' + state.color, 'add a:\t'+state.$id);
+                }, function(state){
+                    var node = state.node;
+                    node && node.parentNode && node.parentNode.removeChild(node);
+                    console.log('%c', 'padding-left:20px;border-left:20px solid ' + state.color, 'del a:\t'+state.$id);
+                });
+
+        }
+    </script>
+    </body>
+    </html>
