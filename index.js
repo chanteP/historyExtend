@@ -4,7 +4,7 @@ var historyStateMap = [];
 
 var backFuncList = [],
     forwardFuncList = [],
-    pushFuncList = [];
+    changeList = [];
 
 var fetch = function(historyId, method){
     var state = historyStateMap[historyId];
@@ -50,6 +50,7 @@ var changeState = function(method){
         fetch(curState.$id, 'push');
 
         runList(forwardFuncList);
+        runList(changeList);
     }
 }
 var replaceState = changeState('replaceState');
@@ -67,6 +68,7 @@ var popState = function(state){
         fetch(state.$id, 'push');
         runList(forwardFuncList);
     }
+    runList(changeList);
     ai = state.$id + 1;
 }
 window.addEventListener('popstate', function(e){
@@ -81,6 +83,9 @@ module.exports = {
     forward : history.forward,
     onpopstate : function(func){
         window.addEventListener('popstate', func);
+    },
+    onstatechange : function(func){
+        changeList.push(func);
     },
     onback : function(func){
         if(typeof func === 'function'){
