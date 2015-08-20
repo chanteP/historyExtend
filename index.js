@@ -2,10 +2,20 @@ var ai = 0;
 var curState;
 var historyStateMap = [];
 
+var backFuncList = [],
+    forwardFuncList = [],
+    pushFuncList = [];
+
 var fetch = function(historyId, method){
-    var state = historyStateMap[historyId]
+    var state = historyStateMap[historyId];
     state && typeof state[method] === 'function' && state[method](state.state);
 }
+var runList = function(list){
+    list.forEach(function(func){
+        func();
+    });
+}
+
 //push(push进去之后执行的func，被pop出来之后执行的func)
 var changeState = function(method){
     return function(state, title, url, forwardFunc, backFunc, stateData){
@@ -17,7 +27,7 @@ var changeState = function(method){
         }
         else{
             curState = {
-                $id : ai++
+                $id : ++ai
             };
         }
 
@@ -38,6 +48,8 @@ var changeState = function(method){
             state : curState
         }
         fetch(curState.$id, 'push');
+
+        runList(forwardFuncList);
     }
 }
 var replaceState = changeState('replaceState');
@@ -48,10 +60,12 @@ var popState = function(state){
     //back
     if(state.$id < ai - 1){
         fetch(curState.$id, 'pop');
+        runList(backFuncList);
     }
     //forward
     else{
         fetch(state.$id, 'push');
+        runList(forwardFuncList);
     }
     ai = state.$id + 1;
 }
@@ -65,6 +79,20 @@ module.exports = {
     replaceState : replaceState,
     back : history.back,
     forward : history.forward,
-    reload : window.location.reload
+    onpopstate : function(func){
+        window.addEventListener('popstate', func);
+    },
+    onback : function(func){
+        if(typeof func === 'function'){
+            backFuncList.push(func);
+        }
+    },
+    onforward : function(func){
+        if(typeof func === 'function'){
+            forwardFuncList.push(func);
+        }
+    },
+    reload : window.location.reload,
+    stack : historyStateMap
 }
 
