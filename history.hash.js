@@ -9,20 +9,7 @@ var backFuncList = [],
 
 var hashChangeBlock;
 
-// var apiLevel = !!history.popState;
-var apiLevel = 1;
-
-var setState = apiLevel ? 
-    function(method, state, title, url){
-        history[method](state, title, url);
-    } : 
-    //不支持history state的情况，使用hashchange
-    function(method, state, title, url){
-        var hash = location.hash.slice(1).replace(/\<\<([\d]+)\>\>/, '') + (state ? '<<' + state.$id + '>>' : '');
-        method === 'replaceState' ? 
-            location.replace('#' + hash) :
-            (location.hash = hash);
-    };
+//不支持history state的情况，使用hashchange
 var changeState = function(method){
     return function(state, title, url, forwardFunc, backFunc, stateData){
         hashChangeBlock = true;
@@ -71,8 +58,8 @@ var popState = function($id){
     ai = $id;
 }
 
-var replaceState = changeState('replaceState');
-var pushState = changeState('pushState');
+var replaceState = changeState('replace');
+var pushState = changeState('hash');
 
 var api = module.exports = {
     pushState : pushState,
@@ -110,48 +97,36 @@ var api = module.exports = {
     history : historyStateMap
 }
 
-if(apiLevel){
-    api.onpopstate(function(e){
-        popState((e.state && e.state.$id) ? e.state.$id : 0);
-        curState = e.state;
-    });
-    window.addEventListener('popstate', function(e){
-        runList(popStateList, e);
-    });
-}
-else{
-    window.addEventListener('hashchange', function(e){
-        if(hashChangeBlock){
-            hashChangeBlock = false;
-            return;
-        }
-        if(!curState){return;}
-        var match = /\<\<([\d]+)\>\>/.exec(location.hash);
-        var $id;
-        if(!match){
-            $id = 0;
-        }
-        else{
-            $id = +match[1];
-        }
-        if($id === curState.$id){return;}
-        popState($id);
-        curState = historyStateMap[$id] ? historyStateMap[$id].state : {$id:0};
-        runList(popStateList);
-    });
-    if(/\<\<([\d]+)\>\>/.exec(location.hash)){
-        setState('replace');
+window.addEventListener('hashchange', function(e){
+    if(hashChangeBlock){
+        hashChangeBlock = false;
+        return;
     }
+    if(!curState){return;}
+    var match = /\<\<([\d]+)\>\>/.exec(location.hash);
+    var $id;
+    if(!match){
+        $id = 0;
+    }
+    else{
+        $id = +match[1];
+    }
+    if($id === curState.$id){return;}
+    popState($id);
+    curState = historyStateMap[$id] ? historyStateMap[$id].state : {$id:0};
+    runList(popStateList);
+});
+if(/\<\<([\d]+)\>\>/.exec(location.hash)){
+    setState('replace');
 }
-
 //通用
 function fetch(historyId, method){
     var state = historyStateMap[historyId];
     state && typeof state[method] === 'function' && state[method](state.state);
 }
-function runList(list, e){
+function runList(list){
     list.forEach(function(func){
-        func(e);
+        func();
     });
 }
 function merge(o1, o2){
@@ -162,4 +137,10 @@ function merge(o1, o2){
         }
     }  
     return o1;
+}
+function setState(method, state, title, url){
+    var hash = location.hash.slice(1).replace(/\<\<([\d]+)\>\>/, '') + (state ? '<<' + state.$id + '>>' : '');
+    method === 'replace' ? 
+        location.replace('#' + hash) :
+        (location.hash = hash);
 }
