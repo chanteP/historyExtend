@@ -37,12 +37,12 @@
     </script>
     <!-- // <script src="./index.js"></script> -->
     <!-- // <script src="./history.state.js"></script> -->
-    // <script src="./history.js"></script>
+    <script src="./index.js"></script>
 
     <script>
         //#################################################################################
         push.onclick = function(){
-            module.exports.pushState(null, '', '?'+Date.now(), function(state){
+            module.exports.replaceState(null, '', '?'+Date.now(), function(state){
                     var a;
                     a = document.createElement('a');
                     a.fxcolor = a.style.background = 'hsla('+state.$id*30+',80%,80%,.7)';

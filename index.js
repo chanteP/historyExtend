@@ -9,8 +9,10 @@ var backFuncList = [],
 
 var hashChangeBlock;
 
-// var apiLevel = !!history.popState;
-var apiLevel = 1;
+//apiLevel: true => history.pushState, false => hash
+var apiLevel = !!history.popState;
+// var apiLevel = 0;
+var hashMarker = /\<\<([\d]+)\>\>/;
 
 var setState = apiLevel ? 
     function(method, state, title, url){
@@ -18,7 +20,7 @@ var setState = apiLevel ?
     } : 
     //不支持history state的情况，使用hashchange
     function(method, state, title, url){
-        var hash = location.hash.slice(1).replace(/\<\<([\d]+)\>\>/, '') + (state ? '<<' + state.$id + '>>' : '');
+        var hash = location.hash.slice(1).replace(hashMarker, '') + (state ? '<<' + state.$id + '>>' : '');
         method === 'replaceState' ? 
             location.replace('#' + hash) :
             (location.hash = hash);
@@ -28,15 +30,12 @@ var changeState = function(method){
         hashChangeBlock = true;
         if(method === 'replace'){
             curState && fetch(curState.$id, 'pop');
-            curState = {
-                $id : ai
-            };
         }
         else{
-            curState = {
-                $id : ++ai
-            };
+            ai++;
         }
+        curState = {$id : ai};
+        // title && (curState.$title = title);
 
         setState(method, curState, document.title = title || document.title, url);
 
@@ -126,7 +125,7 @@ else{
             return;
         }
         if(!curState){return;}
-        var match = /\<\<([\d]+)\>\>/.exec(location.hash);
+        var match = hashMarker.exec(location.hash);
         var $id;
         if(!match){
             $id = 0;
@@ -139,7 +138,7 @@ else{
         curState = historyStateMap[$id] ? historyStateMap[$id].state : {$id:0};
         runList(popStateList);
     });
-    if(/\<\<([\d]+)\>\>/.exec(location.hash)){
+    if(hashMarker.exec(location.hash)){
         setState('replace');
     }
 }
