@@ -10,7 +10,7 @@ var backFuncList = [],
 var hashChangeBlock;
 
 //apiLevel: true => history.pushState, false => hash
-var apiLevel = !!history.popState;
+var apiLevel = !!history.pushState;
 // var apiLevel = 0;
 var hashMarker = /\<\<([\d]+)\>\>/;
 
